@@ -1,13 +1,14 @@
 import React from 'react';
 import KlineCharts from './components/KlineCharts';
-import './App.css';
 
 const App = () => {
+  const symbols = ['BTC', 'ETH', 'LTC', 'XRP', 'ADA']; // Add more symbols as needed
+
   return (
-    <div>
-     <KlineCharts symbol='IBM'/>
+    <div className="App">
+      <KlineCharts symbols={symbols} />
     </div>
   );
-}
+};
 
 export default App;

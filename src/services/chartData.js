@@ -1,18 +1,39 @@
-const API_KEY = 'VJSRZ9DD4HT9HA2E';  
-const BASE_URL = 'https://www.alphavantage.co/query';
+import axios from 'axios';
 
-export const fetchKlineData = async (symbol) => {
-  const response = await fetch(`${BASE_URL}?function=TIME_SERIES_DAILY&symbol=${symbol}&outputsize=compact&apikey=${API_KEY}`);
-  const data = await response.json();
-  if (data['Time Series (Daily)']) {
-    const timeSeries = data['Time Series (Daily)'];
-    return Object.keys(timeSeries).map(date => ({
-      timestamp: new Date(date).getTime(),
-      open: parseFloat(timeSeries[date]['1. open']),
-      high: parseFloat(timeSeries[date]['2. high']),
-      low: parseFloat(timeSeries[date]['3. low']),
-      close: parseFloat(timeSeries[date]['4. close']),
-    }));
+const fetchKlineData = async (interval, symbol = 'BTC') => {
+  let endpoint;
+  let params = {
+    fsym: symbol,
+    tsym: 'USD',
+    limit: 30,
+  };
+
+  switch (interval) {
+    case 'hour':
+      endpoint = 'https://min-api.cryptocompare.com/data/v2/histohour';
+      break;
+    case 'minute':
+      endpoint = 'https://min-api.cryptocompare.com/data/v2/histominute';
+      break;
+    case 'day':
+    default:
+      endpoint = 'https://min-api.cryptocompare.com/data/v2/histoday';
+      break;
   }
-  throw new Error('Failed to fetch data');
+
+  try {
+    const response = await axios.get(endpoint, { params });
+    return response.data.Data.Data.map(item => ({
+      timestamp: item.time * 1000,
+      open: item.open,
+      high: item.high,
+      low: item.low,
+      close: item.close,
+      volume: item.volumeto
+    }));
+  } catch (error) {
+    throw new Error('Failed to fetch data');
+  }
 };
+
+export { fetchKlineData };
